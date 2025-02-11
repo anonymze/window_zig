@@ -1,3 +1,4 @@
 .history
 .vscode
 .zig-cache
+.DS_Store
