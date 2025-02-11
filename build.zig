@@ -52,6 +52,28 @@ pub fn build(b: *std.Build) void {
     exe.linkFramework("OpenGL"); // Required for macOS
     exe.linkLibC();
 
+    // *** STRUCTURE BUNDLE MACOS ***
+
+    // Install executable to the proper location in the bundle
+    const install_exe = b.addInstallArtifact(exe, .{
+        .dest_dir = .{ .override = .{ .custom = "window_zig.app/Contents/MacOS" } },
+    });
+
+    // Install Info.plist to the correct location
+    const install_plist = b.addInstallFile(b.path("Info.plist"), "window_zig.app/Contents/Info.plist");
+
+    // Copy icon file
+    const icon_install = b.addInstallFile(b.path("assets/icons/AppIcon.icns"), "window_zig.app/Contents/Resources/AppIcon.icns");
+
+    // Make sure everything is installed in the right order
+    const bundle_step = b.step("bundle", "Build the macOS app bundle");
+    bundle_step.dependOn(&install_exe.step);
+    bundle_step.dependOn(&install_plist.step);
+    bundle_step.dependOn(&icon_install.step);
+    b.getInstallStep().dependOn(bundle_step);
+
+    // *** END STRUCTURE BUNDLE MACOS ***
+
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
     // step when running `zig build`).
